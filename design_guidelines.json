@@ -1,0 +1,171 @@
+{
+  "app_name": "VagaAI Mobile",
+  "personality": "1 iOS-Native Clean",
+  "personality_one_liner": "An authoritative, clean, and frictionless career platform where candidates craft tailored AI resumes and recruiters instantly triage top talent.",
+  "color": {
+    "surface": "#F9F9FB",
+    "onSurface": "#111115",
+    "surfaceSecondary": "#FFFFFF",
+    "onSurfaceSecondary": "#111115",
+    "surfaceTertiary": "#F0F0F5",
+    "onSurfaceTertiary": "#555560",
+    "surfaceInverse": "#1A1A22",
+    "onSurfaceInverse": "#FFFFFF",
+    "brand": "#1F51FF",
+    "brandPrimary": "#1F51FF",
+    "onBrandPrimary": "#FFFFFF",
+    "brandSecondary": "#3A65FF",
+    "onBrandSecondary": "#FFFFFF",
+    "brandTertiary": "#E6ECFF",
+    "onBrandTertiary": "#1F51FF",
+    "success": "#2E7D32",
+    "onSuccess": "#FFFFFF",
+    "warning": "#ED6C02",
+    "onWarning": "#FFFFFF",
+    "error": "#D32F2F",
+    "onError": "#FFFFFF",
+    "info": "#0288D1",
+    "onInfo": "#FFFFFF",
+    "border": "#E2E2EA",
+    "borderStrong": "#1F51FF",
+    "divider": "#E8E8EF"
+  },
+  "typography": {
+    "displayFontFamily": "PlusJakartaSans",
+    "textFontFamily": "PlusJakartaSans",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Generous vertical padding, clear grouping, touch targets >= 44x44pt, safe area adhered everywhere.",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 6,
+    "md": 12,
+    "lg": 20,
+    "pill": 999
+  },
+  "shadow_tier": "1",
+  "navigation": "bottom_tabs",
+  "icon_set": "Ionicons",
+  "glassmorphism": {
+    "enabled": true,
+    "do's": [
+      "Use frosted glass on sticky headers and bottom tab bars",
+      "Apply translucent tinted base for foreground readability"
+    ],
+    "dont's": [
+      "Never blur form inputs or body text regions",
+      "Avoid stacking multiple blur layers over dense content"
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-glass-effect",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "RoleSelection",
+      "purpose": "Allow the user to choose between Candidate and Recruiter roles immediately upon launch.",
+      "states": {
+        "loading": "Centered spinner over warm clean background",
+        "empty": "Role cards loaded with clear descriptive imagery and action buttons",
+        "error": "Readable alert message with retry button"
+      },
+      "layout": "Full-bleed atmospheric background with glass-morphic role selection cards in the lower half, thumb-optimized tap targets."
+    },
+    {
+      "name": "Auth",
+      "purpose": "Email and password authentication supporting both login and signup flows with role preservation.",
+      "states": {
+        "loading": "Activity indicator inside primary CTA button",
+        "empty": "Clean input fields with placeholder labels above inputs",
+        "error": "Inline validation banner with error red styling and retry action"
+      },
+      "layout": "Centered form container inside KeyboardAvoidingView, sticky primary CTA, clean typography."
+    },
+    {
+      "name": "CandidateHome",
+      "purpose": "Browse open job listings with real-time match percentage and quick apply triggers.",
+      "states": {
+        "loading": "Skeleton loader cards matching job card dimensions",
+        "empty": "Illustration, friendly message, and button to reset filters",
+        "error": "Error card with readable message and retry button"
+      },
+      "layout": "Scrollable feed with sticky search header, horizontal category chips, and 100-percent width job cards featuring match score badges."
+    },
+    {
+      "name": "JobDetail",
+      "purpose": "Examine job details, essential requirements, nice-to-haves, and trigger AI resume customization.",
+      "states": {
+        "loading": "Skeleton header and tab loaders",
+        "empty": "No details available message with refresh button",
+        "error": "Error state view with retry action"
+      },
+      "layout": "Hero banner with company logo PNG, sticky header, tabbed description/requirements layout, and persistent sticky bottom apply CTA."
+    },
+    {
+      "name": "CandidateProfile",
+      "purpose": "Manage personal info, summary, experience, education, skills, portfolio, and professional preferences.",
+      "states": {
+        "loading": "Profile skeleton loader",
+        "empty": "Prompt to add professional data to unlock AI resume matching",
+        "error": "Error alert with retry button"
+      },
+      "layout": "Sectioned card layout with avatar header, collapsible experience/education lists, and editable profile fields."
+    },
+    {
+      "name": "RecruiterDashboard",
+      "purpose": "Recruiter command center listing posted jobs and aggregated candidate ranking analytics.",
+      "states": {
+        "loading": "Dashboard skeleton loader with pulse effect",
+        "empty": "Illustration with prompt to create the first job posting",
+        "error": "Error banner with retry option"
+      },
+      "layout": "Top stats overview followed by active job cards and candidate breakdown lists sorted by mandatory requirements match."
+    },
+    {
+      "name": "JobCreation",
+      "purpose": "Publish new job listings specifying title, company, location, modality, description, mandatory requirements, and nice-to-haves.",
+      "states": {
+        "loading": "Submitting state with progress indicator",
+        "empty": "Form ready for input",
+        "error": "Validation error highlight on missing mandatory fields"
+      },
+      "layout": "Single-column scrollable form with structured tag inputs for mandatory requirements and differentiators, sticky submit CTA at bottom."
+    }
+  ],
+  "images": {
+    "candidate_hero": {
+      "url": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDJ8MHwxfHNlYXJjaHwxfHx0ZWFtJTIwd29ya2luZyUyMHRvZ2V0aGVyfGVufDB8fHx8MTc4ODIxNTI5N3ww&ixlib=rb-4.1.0&q=85",
+      "dark": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDJ8MHwxfHNlYXJjaHwxfHx0ZWFtJTIwd29ya2luZyUyMHRvZ2V0aGVyfGVufDB8fHx8MTc4ODIxNTI5N3ww&ixlib=rb-4.1.0&q=85",
+      "alt": "Professionals collaborating in a modern workspace"
+    },
+    "recruiter_hero": {
+      "url": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDJ8MHwxfHNlYXJjaHwxfHxyZWNydWl0ZXIlMjBpbnRlcnZpZXd8ZW58MHx8fHwxNzg4MjE1Mjk3fDA&ixlib=rb-4.1.0&q=85",
+      "dark": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDJ8MHwxfHNlYXJjaHwxfHxyZWNydWl0ZXIlMjBpbnRlcnZpZXd8ZW58MHx8fHwxNzg4MjE1Mjk3fDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Recruiter analyzing candidate profiles on screen"
+    }
+  },
+  "instructions_to_main_agent": "Ensure all screens adhere strictly to the 1 iOS-Native Clean personality guidelines. Use Plus Jakarta Sans typography with font weight capped at 500. Implement sticky bottom CTAs on forms and detail screens. Every branded entity must fetch real PNG logos. Include full Loading, Empty, and Error states on every data screen. Apply safe-area margins and ensure touch targets are at least 44x44pt."
+}
