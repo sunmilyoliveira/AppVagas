@@ -1,38 +1,38 @@
 {
-  "app_name": "VagaAI Mobile",
+  "app_name": "Vagas+",
   "personality": "1 iOS-Native Clean",
-  "personality_one_liner": "An authoritative, clean, and frictionless career platform where candidates craft tailored AI resumes and recruiters instantly triage top talent.",
+  "personality_one_liner": "An intelligent, frictionless mobile hiring ecosystem where candidates meet AI-matched career opportunities and recruiters manage pipelines seamlessly.",
   "color": {
-    "surface": "#F9F9FB",
-    "onSurface": "#111115",
-    "surfaceSecondary": "#FFFFFF",
-    "onSurfaceSecondary": "#111115",
-    "surfaceTertiary": "#F0F0F5",
-    "onSurfaceTertiary": "#555560",
-    "surfaceInverse": "#1A1A22",
-    "onSurfaceInverse": "#FFFFFF",
-    "brand": "#1F51FF",
-    "brandPrimary": "#1F51FF",
+    "surface": "#FDFBF7",
+    "onSurface": "#1C1C1E",
+    "surfaceSecondary": "#F3EFEA",
+    "onSurfaceSecondary": "#3A3935",
+    "surfaceTertiary": "#E5E0D8",
+    "onSurfaceTertiary": "#5A5852",
+    "surfaceInverse": "#1C1C1E",
+    "onSurfaceInverse": "#FDFBF7",
+    "brand": "#3B5249",
+    "brandPrimary": "#3B5249",
     "onBrandPrimary": "#FFFFFF",
-    "brandSecondary": "#3A65FF",
+    "brandSecondary": "#517066",
     "onBrandSecondary": "#FFFFFF",
-    "brandTertiary": "#E6ECFF",
-    "onBrandTertiary": "#1F51FF",
-    "success": "#2E7D32",
+    "brandTertiary": "#DCE5E2",
+    "onBrandTertiary": "#22332C",
+    "success": "#2D6A4F",
     "onSuccess": "#FFFFFF",
-    "warning": "#ED6C02",
+    "warning": "#B5838D",
     "onWarning": "#FFFFFF",
-    "error": "#D32F2F",
+    "error": "#C84B31",
     "onError": "#FFFFFF",
-    "info": "#0288D1",
+    "info": "#4A6FA5",
     "onInfo": "#FFFFFF",
-    "border": "#E2E2EA",
-    "borderStrong": "#1F51FF",
-    "divider": "#E8E8EF"
+    "border": "#E2DBD3",
+    "borderStrong": "#3B5249",
+    "divider": "#E8E2DA"
   },
   "typography": {
-    "displayFontFamily": "PlusJakartaSans",
-    "textFontFamily": "PlusJakartaSans",
+    "displayFontFamily": "Satoshi",
+    "textFontFamily": "DM Sans",
     "scale": {
       "sm": 12,
       "base": 14,
@@ -42,7 +42,7 @@
     }
   },
   "spacing": {
-    "rule": "Generous vertical padding, clear grouping, touch targets >= 44x44pt, safe area adhered everywhere.",
+    "rule": "Generous iOS vertical rhythm with comfortable touch targets and safe area protection.",
     "xs": 4,
     "sm": 8,
     "md": 12,
@@ -61,14 +61,14 @@
   "navigation": "bottom_tabs",
   "icon_set": "Ionicons",
   "glassmorphism": {
-    "enabled": true,
+    "enabled": "true",
     "do's": [
       "Use frosted glass on sticky headers and bottom tab bars",
-      "Apply translucent tinted base for foreground readability"
+      "Apply translucent tinted base over scrolling card backdrops"
     ],
     "dont's": [
-      "Never blur form inputs or body text regions",
-      "Avoid stacking multiple blur layers over dense content"
+      "Never blur form inputs or entire screens",
+      "Do not sacrifice WCAG contrast on text over glass"
     ]
   },
   "platform_libraries": {
@@ -85,87 +85,101 @@
   },
   "screens": [
     {
-      "name": "RoleSelection",
-      "purpose": "Allow the user to choose between Candidate and Recruiter roles immediately upon launch.",
-      "states": {
-        "loading": "Centered spinner over warm clean background",
-        "empty": "Role cards loaded with clear descriptive imagery and action buttons",
-        "error": "Readable alert message with retry button"
-      },
-      "layout": "Full-bleed atmospheric background with glass-morphic role selection cards in the lower half, thumb-optimized tap targets."
-    },
-    {
       "name": "Auth",
-      "purpose": "Email and password authentication supporting both login and signup flows with role preservation.",
+      "purpose": "Secure authentication supporting email/password with strict complexity, Google, and Apple sign-in.",
       "states": {
-        "loading": "Activity indicator inside primary CTA button",
-        "empty": "Clean input fields with placeholder labels above inputs",
-        "error": "Inline validation banner with error red styling and retry action"
+        "loading": "Centered spinner over warm parchment backdrop",
+        "empty": "Clean sign-in card with social buttons",
+        "error": "Inline validation banner with actionable fix guidance"
       },
-      "layout": "Centered form container inside KeyboardAvoidingView, sticky primary CTA, clean typography."
+      "layout": "Centered clean card form with email/password inputs requiring special characters and numbers, plus one-tap Google and Apple buttons."
     },
     {
-      "name": "CandidateHome",
-      "purpose": "Browse open job listings with real-time match percentage and quick apply triggers.",
+      "name": "HomeFeed",
+      "purpose": "Display AI-matched job opportunities with search bar, filters, and quick application access.",
       "states": {
-        "loading": "Skeleton loader cards matching job card dimensions",
-        "empty": "Illustration, friendly message, and button to reset filters",
-        "error": "Error card with readable message and retry button"
+        "loading": "Skeleton loader matching job card dimensions",
+        "empty": "Illustration of a magnifying glass with search reset CTA",
+        "error": "Friendly error message with retry button"
       },
-      "layout": "Scrollable feed with sticky search header, horizontal category chips, and 100-percent width job cards featuring match score badges."
+      "layout": "Sticky search header, horizontal category chips, vertical stack of job listing cards with AI match badges and sticky bottom tab bar."
+    },
+    {
+      "name": "RecruiterVerification",
+      "purpose": "Verify recruiters via email, corporate phone, and domain ownership for trusted job posting.",
+      "states": {
+        "loading": "Verification progress spinner",
+        "empty": "Prompt to input corporate email and domain",
+        "error": "Domain mismatch alert with support link"
+      },
+      "layout": "Step-by-step verification wizard with input fields for corporate email, phone verification code, and DNS/domain check status."
     },
     {
       "name": "JobDetail",
-      "purpose": "Examine job details, essential requirements, nice-to-haves, and trigger AI resume customization.",
+      "purpose": "Detailed view of job description, mandatory requirements, differentiators, and AI resume customization trigger.",
       "states": {
-        "loading": "Skeleton header and tab loaders",
-        "empty": "No details available message with refresh button",
-        "error": "Error state view with retry action"
+        "loading": "Header and text skeleton loader",
+        "empty": "Job details unavailable state",
+        "error": "Network error with retry action"
       },
-      "layout": "Hero banner with company logo PNG, sticky header, tabbed description/requirements layout, and persistent sticky bottom apply CTA."
+      "layout": "Hero banner with company logo and gradient scrim, tabbed view (Description, Requirements, Differentiators), and sticky bottom Apply CTA."
     },
     {
-      "name": "CandidateProfile",
-      "purpose": "Manage personal info, summary, experience, education, skills, portfolio, and professional preferences.",
+      "name": "AiResumeGenerator",
+      "purpose": "Allow candidates to request AI-tailored resumes matching specific job criteria.",
       "states": {
-        "loading": "Profile skeleton loader",
-        "empty": "Prompt to add professional data to unlock AI resume matching",
-        "error": "Error alert with retry button"
+        "loading": "Animated AI generation progress indicator with tips",
+        "empty": "Profile data missing prompt",
+        "error": "API timeout with retry button"
       },
-      "layout": "Sectioned card layout with avatar header, collapsible experience/education lists, and editable profile fields."
+      "layout": "Split section preview showing original profile vs. real-time AI optimized bullet points, skill match percentages, and export/apply buttons."
     },
     {
-      "name": "RecruiterDashboard",
-      "purpose": "Recruiter command center listing posted jobs and aggregated candidate ranking analytics.",
+      "name": "RecruiterPipeline",
+      "purpose": "Manage selective hiring pipeline with customizable stages and candidate evaluation.",
       "states": {
-        "loading": "Dashboard skeleton loader with pulse effect",
-        "empty": "Illustration with prompt to create the first job posting",
-        "error": "Error banner with retry option"
+        "loading": "Kanban column skeleton loader",
+        "empty": "No candidates in this stage illustration",
+        "error": "Failed to sync pipeline data retry"
       },
-      "layout": "Top stats overview followed by active job cards and candidate breakdown lists sorted by mandatory requirements match."
+      "layout": "Horizontal stage selector (Pre-screening, Review, Interview, Video Call, Assessment, Decision) with candidate cards showing score indicators."
     },
     {
-      "name": "JobCreation",
-      "purpose": "Publish new job listings specifying title, company, location, modality, description, mandatory requirements, and nice-to-haves.",
+      "name": "VideoRoom",
+      "purpose": "Private or collaborative video interview room with secure room codes and auto-expiration.",
       "states": {
-        "loading": "Submitting state with progress indicator",
-        "empty": "Form ready for input",
-        "error": "Validation error highlight on missing mandatory fields"
+        "loading": "Connecting to secure backend video node...",
+        "empty": "Waiting for participants to join room",
+        "error": "Connection lost reconnecting..."
       },
-      "layout": "Single-column scrollable form with structured tag inputs for mandatory requirements and differentiators, sticky submit CTA at bottom."
+      "layout": "Full-screen video grid with floating controls (Mute, Camera, Chat, Leave), room code badge, and encrypted retention timer."
+    },
+    {
+      "name": "PrivacyAndAudit",
+      "purpose": "Manage explicit consent, visibility controls, audit logs, and data/account deletion.",
+      "states": {
+        "loading": "Loading security audit trail...",
+        "empty": "No audit logs found",
+        "error": "Could not retrieve audit data"
+      },
+      "layout": "Grouped iOS settings style list with toggle switches for profile visibility, consent agreements, audit log viewer, and secure data wipe."
     }
   ],
   "images": {
-    "candidate_hero": {
-      "url": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDJ8MHwxfHNlYXJjaHwxfHx0ZWFtJTIwd29ya2luZyUyMHRvZ2V0aGVyfGVufDB8fHx8MTc4ODIxNTI5N3ww&ixlib=rb-4.1.0&q=85",
-      "dark": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDJ8MHwxfHNlYXJjaHwxfHx0ZWFtJTIwd29ya2luZyUyMHRvZ2V0aGVyfGVufDB8fHx8MTc4ODIxNTI5N3ww&ixlib=rb-4.1.0&q=85",
-      "alt": "Professionals collaborating in a modern workspace"
+    "auth_backdrop": {
+      "url": "https://images.unsplash.com/photo-1579487785973-74d2ca7abdd5",
+      "dark": "https://images.unsplash.com/photo-1635954398371-caeabc58fa22",
+      "alt": "Modern office abstract background"
     },
-    "recruiter_hero": {
-      "url": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDJ8MHwxfHNlYXJjaHwxfHxyZWNydWl0ZXIlMjBpbnRlcnZpZXd8ZW58MHx8fHwxNzg4MjE1Mjk3fDA&ixlib=rb-4.1.0&q=85",
-      "dark": "https://images.unsplash.com/photo-1551836022-d5d88e9218df?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDQ2NDJ8MHwxfHNlYXJjaHwxfHxyZWNydWl0ZXIlMjBpbnRlcnZpZXd8ZW58MHx8fHwxNzg4MjE1Mjk3fDA&ixlib=rb-4.1.0&q=85",
-      "alt": "Recruiter analyzing candidate profiles on screen"
+    "recruiter_avatar": {
+      "url": "https://images.unsplash.com/photo-1624797432677-6f803a98acb3",
+      "alt": "Corporate recruiter professional avatar"
+    },
+    "video_backdrop": {
+      "url": "https://images.unsplash.com/photo-1776042449398-7aceef994cce",
+      "dark": "https://images.unsplash.com/photo-1758600588045-a4168040f2d6",
+      "alt": "Job interview video call abstract background"
     }
   },
-  "instructions_to_main_agent": "Ensure all screens adhere strictly to the 1 iOS-Native Clean personality guidelines. Use Plus Jakarta Sans typography with font weight capped at 500. Implement sticky bottom CTAs on forms and detail screens. Every branded entity must fetch real PNG logos. Include full Loading, Empty, and Error states on every data screen. Apply safe-area margins and ensure touch targets are at least 44x44pt."
+  "instructions_to_main_agent": "Implement all 8 core screens for Vagas+ using React Native and Expo. Ensure strong auth with email (requiring special chars & numbers), Google, and Apple. Implement recruiter verification via email, phone, and corporate domain. Build the AI resume builder for candidates and customizable selection pipeline for recruiters. Include the secure video call room with room codes and auto-expiration, plus privacy controls (audit logs, explicit consent, and data deletion). Strictly adhere to iOS-Native Clean styling with warm botanical palette (#3B5249 primary, #FDFBF7 surface), 1px borders, smooth glassmorphism on headers/tabs, and WCAG AAA contrast."
 }
