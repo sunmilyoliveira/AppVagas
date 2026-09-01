@@ -101,6 +101,35 @@ async def send_verification_email(to: str, token: str) -> None:
         raise HTTPException(status_code=502, detail="Não foi possível enviar o e-mail de verificação") from exc
 
 
+async def send_password_reset_email(to: str, token: str) -> None:
+    email_key = os.getenv("EMERGENT_EMAIL_KEY", "")
+    from_name = os.getenv("EMAIL_FROM_NAME", "Vagas+")
+    app_url = os.getenv("APP_PUBLIC_URL", "")
+    if not email_key or not app_url.startswith("https://"):
+        raise HTTPException(status_code=503, detail="Envio de e-mail não configurado")
+    link = f"{app_url.rstrip('/')}/?reset_token={token}"
+    html = (
+        f'<table role="presentation" width="100%"><tr><td style="padding:24px;font-family:Arial,sans-serif">'
+        f'<h2>Redefinir senha do {escape(from_name)}</h2>'
+        f'<p>Você pediu para redefinir sua senha. Toque no link seguro abaixo para escolher uma nova senha:</p>'
+        f'<p><a href="{escape(link)}">Redefinir minha senha</a></p>'
+        f'<p style="font-size:12px;color:#666">Este link expira em 30 minutos e só pode ser usado uma vez. '
+        f'Se você não solicitou, ignore este e-mail — o {escape(from_name)} nunca pede sua senha por e-mail.</p>'
+        "</td></tr></table>"
+    )
+    _assert_safe_email("Redefinir senha do Vagas+", html)
+    try:
+        async with httpx.AsyncClient(timeout=30) as http:
+            response = await http.post(
+                f"{EMAIL_BASE_URL}/api/v1/email/send",
+                headers={"X-Email-Key": email_key},
+                json={"to": [to], "subject": "Redefinir senha do Vagas+", "html": html, "from_name": from_name},
+            )
+        response.raise_for_status()
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail="Não foi possível enviar o e-mail de redefinição") from exc
+
+
 async def verify_domain_txt(domain: str, expected_token: str) -> bool:
     def resolve() -> bool:
         try:

@@ -21,6 +21,7 @@ from starlette.middleware.cors import CORSMiddleware
 from security_features import (
     PASSWORD_POLICY,
     audit,
+    send_password_reset_email,
     send_verification_email,
     token_hash,
     validate_password,
@@ -77,6 +78,15 @@ class SessionInput(BaseModel):
 
 class PasswordChangeInput(BaseModel):
     current_password: str
+    new_password: str
+
+
+class ForgotPasswordInput(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordInput(BaseModel):
+    token: str = Field(min_length=16, max_length=200)
     new_password: str
 
 
@@ -317,6 +327,63 @@ async def change_password(data: PasswordChangeInput, user: Dict[str, Any] = Depe
     await db.users.update_one({"id": user["id"]}, {"$set": {"password_hash": password_hash, "password_updated_at": now_iso()}})
     await audit(db, user["id"], "auth.password_changed", {})
     return {"message": "Senha atualizada com sucesso"}
+
+
+@api_router.post("/auth/forgot-password")
+async def forgot_password(data: ForgotPasswordInput) -> Dict[str, str]:
+    email = data.email.lower()
+    generic = {"message": "Se este e-mail existir na Vagas+, enviaremos as instruções em instantes."}
+    user = await db.users.find_one({"email": email}, {"_id": 0})
+    if not user or not user.get("password_hash"):
+        # Não revelamos existência do usuário; usuários Google só devem entrar pelo Google.
+        await audit(db, None, "auth.forgot_password_unknown", {"email": email})
+        return generic
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=30)
+    await db.password_resets.insert_one({
+        "id": str(uuid.uuid4()),
+        "user_id": user["id"],
+        "email": email,
+        "token_hash": token_hash(token),
+        "created_at": datetime.now(timezone.utc),
+        "expires_at": expires_at,
+        "used_at": None,
+    })
+    try:
+        await send_password_reset_email(email, token)
+    except HTTPException:
+        # Se o envio falhar, ainda respondemos genericamente por privacidade.
+        await audit(db, user["id"], "auth.forgot_password_send_failed", {})
+        return generic
+    await audit(db, user["id"], "auth.forgot_password_sent", {})
+    return generic
+
+
+@api_router.post("/auth/reset-password")
+async def reset_password(data: ResetPasswordInput) -> Dict[str, str]:
+    validate_password(data.new_password)
+    record = await db.password_resets.find_one({"token_hash": token_hash(data.token)}, {"_id": 0})
+    if not record or record.get("used_at"):
+        raise HTTPException(status_code=400, detail="Link inválido ou já utilizado")
+    expires_at = record["expires_at"]
+    if isinstance(expires_at, str):
+        expires_at = datetime.fromisoformat(expires_at)
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at <= datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Link expirado, solicite novamente")
+    password_hash = bcrypt.hashpw(data.new_password.encode(), bcrypt.gensalt()).decode()
+    await db.users.update_one(
+        {"id": record["user_id"]},
+        {"$set": {"password_hash": password_hash, "password_updated_at": now_iso()}},
+    )
+    await db.password_resets.update_one(
+        {"id": record["id"]}, {"$set": {"used_at": datetime.now(timezone.utc)}}
+    )
+    # Invalida sessões existentes por segurança.
+    await db.user_sessions.delete_many({"user_id": record["user_id"]})
+    await audit(db, record["user_id"], "auth.password_reset_completed", {})
+    return {"message": "Senha atualizada. Faça login com a nova senha."}
 
 
 @api_router.post("/auth/session")
@@ -1071,6 +1138,8 @@ async def create_security_indexes() -> None:
     await db.audit_logs.create_index("created_at")
     await db.notifications.create_index([("user_id", 1), ("created_at", -1)])
     await db.messages.create_index([("application_id", 1), ("created_at", 1)])
+    await db.password_resets.create_index("expires_at", expireAfterSeconds=0)
+    await db.password_resets.create_index("token_hash", unique=True)
 
 
 @app.on_event("shutdown")

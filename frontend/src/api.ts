@@ -171,6 +171,20 @@ export async function authenticate(email: string, password: string, role: Role, 
   return result.user;
 }
 
+export async function forgotPassword(email: string): Promise<{ message: string }> {
+  return request<{ message: string }>("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+  return request<{ message: string }>("/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ token, new_password: newPassword }),
+  });
+}
+
 WebBrowser.maybeCompleteAuthSession();
 const exchangedSessions = new Set<string>();
 const sessionIdFromUrl = (value: string | null): string | null =>

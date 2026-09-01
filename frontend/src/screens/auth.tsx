@@ -15,8 +15,10 @@ import {
 import {
   authenticate,
   authenticateWithGoogle,
+  forgotPassword,
   isStrongPassword,
   PASSWORD_POLICY,
+  resetPassword,
   Role,
   User,
 } from "@/src/api";
@@ -82,25 +84,54 @@ function RoleCard({
   );
 }
 
+type AuthMode = "signin" | "signup" | "forgot" | "reset";
+
 export function AuthScreen({
   role,
   onBack,
   onAuthenticated,
+  initialResetToken,
+  onResetTokenConsumed,
 }: {
   role: Role;
   onBack: () => void;
   onAuthenticated: (user: User) => void;
+  initialResetToken?: string | null;
+  onResetTokenConsumed?: () => void;
 }) {
-  const [create, setCreate] = useState(false);
+  const [mode, setMode] = useState<AuthMode>(initialResetToken ? "reset" : "signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [resetToken, setResetToken] = useState(initialResetToken ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const submit = async () => {
-    Keyboard.dismiss();
+  const [info, setInfo] = useState("");
+
+  const clearMessages = () => {
     setError("");
-    if (!email || (create ? !isStrongPassword(password) : password.length < 1)) {
-      setError(create ? PASSWORD_POLICY : "Informe seu e-mail e senha.");
+    setInfo("");
+  };
+
+  const submitSignInSignUp = async () => {
+    Keyboard.dismiss();
+    clearMessages();
+    const create = mode === "signup";
+    if (!email) {
+      setError("Informe seu e-mail.");
+      return;
+    }
+    if (create) {
+      if (!isStrongPassword(password)) {
+        setError(PASSWORD_POLICY);
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError("A confirmação de senha não confere.");
+        return;
+      }
+    } else if (password.length < 1) {
+      setError("Informe sua senha.");
       return;
     }
     setBusy(true);
@@ -112,8 +143,58 @@ export function AuthScreen({
       setBusy(false);
     }
   };
+
+  const submitForgot = async () => {
+    Keyboard.dismiss();
+    clearMessages();
+    if (!email) {
+      setError("Informe seu e-mail.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const result = await forgotPassword(email);
+      setInfo(result.message);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const submitReset = async () => {
+    Keyboard.dismiss();
+    clearMessages();
+    if (!resetToken.trim()) {
+      setError("Cole o código recebido por e-mail ou abra pelo link.");
+      return;
+    }
+    if (!isStrongPassword(password)) {
+      setError(PASSWORD_POLICY);
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("A confirmação de senha não confere.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const result = await resetPassword(resetToken.trim(), password);
+      setInfo(result.message);
+      setMode("signin");
+      setPassword("");
+      setConfirmPassword("");
+      setResetToken("");
+      onResetTokenConsumed?.();
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const google = async () => {
-    setError("");
+    clearMessages();
     setBusy(true);
     try {
       onAuthenticated(await authenticateWithGoogle());
@@ -124,72 +205,191 @@ export function AuthScreen({
       setBusy(false);
     }
   };
+
   return (
     <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.authRoot}>
       <ScrollView contentContainerStyle={{ padding: 24 }} keyboardShouldPersistTaps="handled">
-        <Pressable testID="auth-back" onPress={onBack} style={styles.back}>
+        <Pressable
+          testID="auth-back"
+          onPress={() => {
+            if (mode === "signin") onBack();
+            else {
+              setMode("signin");
+              clearMessages();
+            }
+          }}
+          style={styles.back}
+        >
           <Ionicons name="arrow-back" size={22} color={colors.ink} />
           <Text style={styles.backText}>Voltar</Text>
         </Pressable>
+
         <View style={styles.authHead}>
           <View style={styles.brandMarkLarge}>
             <Ionicons name={role === "candidate" ? "person" : "briefcase"} size={26} color="#fff" />
           </View>
-          <Text style={styles.authTitle}>{create ? "Crie sua conta" : "Bem-vindo de volta"}</Text>
-          <Text style={styles.authSub}>
-            {role === "candidate"
-              ? "Seu próximo passo profissional começa aqui."
-              : "Encontre pessoas que combinam com sua vaga."}
-          </Text>
+          <Text style={styles.authTitle}>{titleFor(mode)}</Text>
+          <Text style={styles.authSub}>{subtitleFor(mode, role)}</Text>
         </View>
+
         {error ? <ErrorBox text={error} /> : null}
-        <Field
-          testID="auth-email"
-          label="E-MAIL"
-          value={email}
-          onChangeText={setEmail}
-          placeholder="voce@email.com"
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-        <Field
-          testID="auth-password"
-          label="SENHA"
-          value={password}
-          onChangeText={setPassword}
-          placeholder={create ? "10+ chars, maiúscula, número e símbolo" : "Sua senha"}
-          secure
-        />
-        <Button testID={create ? "auth-signup" : "auth-login"} title={create ? "Criar conta" : "Entrar"} onPress={submit} loading={busy} />
-        {create ? <Text style={styles.policyHint}>{PASSWORD_POLICY}</Text> : null}
-        {role === "candidate" ? (
+        {info ? (
+          <View style={styles.info}>
+            <Ionicons name="information-circle-outline" size={18} color={colors.blue} />
+            <Text style={styles.infoText}>{info}</Text>
+          </View>
+        ) : null}
+
+        {mode === "reset" ? (
           <>
-            <Text style={styles.or}>ou continue com</Text>
+            <Field
+              testID="reset-token"
+              label="CÓDIGO DO E-MAIL"
+              value={resetToken}
+              onChangeText={setResetToken}
+              placeholder="Cole aqui o código recebido"
+              autoCapitalize="none"
+            />
+            <Field
+              testID="reset-password"
+              label="NOVA SENHA"
+              value={password}
+              onChangeText={setPassword}
+              placeholder="10+ chars, maiúscula, número e símbolo"
+              secure
+            />
+            <Field
+              testID="reset-confirm"
+              label="CONFIRMAR NOVA SENHA"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder="Repita a nova senha"
+              secure
+            />
+            <Button testID="reset-submit" title="Redefinir senha" onPress={submitReset} loading={busy} />
+            <Text style={styles.policyHint}>{PASSWORD_POLICY}</Text>
+          </>
+        ) : mode === "forgot" ? (
+          <>
+            <Field
+              testID="forgot-email"
+              label="E-MAIL"
+              value={email}
+              onChangeText={setEmail}
+              placeholder="voce@email.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <Button testID="forgot-submit" title="Enviar link de recuperação" onPress={submitForgot} loading={busy} />
             <Pressable
-              testID="google-login"
-              onPress={google}
-              style={({ pressed }) => [styles.socialButton, pressed && styles.pressed]}
+              testID="forgot-open-reset"
+              onPress={() => {
+                setMode("reset");
+                clearMessages();
+              }}
+              style={styles.switch}
             >
-              <Ionicons name="logo-google" size={19} color={colors.ink} />
-              <Text style={styles.socialText}>Continuar com Google</Text>
+              <Text style={styles.switchText}>Já tenho o código do e-mail</Text>
             </Pressable>
           </>
         ) : (
-          <Text style={styles.providerNote}>Login social liberado após validação da identidade corporativa.</Text>
+          <>
+            <Field
+              testID="auth-email"
+              label="E-MAIL"
+              value={email}
+              onChangeText={setEmail}
+              placeholder="voce@email.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <Field
+              testID="auth-password"
+              label="SENHA"
+              value={password}
+              onChangeText={setPassword}
+              placeholder={mode === "signup" ? "10+ chars, maiúscula, número e símbolo" : "Sua senha"}
+              secure
+            />
+            {mode === "signup" ? (
+              <Field
+                testID="auth-confirm-password"
+                label="CONFIRMAR SENHA"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder="Repita sua senha"
+                secure
+              />
+            ) : null}
+            <Button
+              testID={mode === "signup" ? "auth-signup" : "auth-login"}
+              title={mode === "signup" ? "Criar conta" : "Entrar"}
+              onPress={submitSignInSignUp}
+              loading={busy}
+            />
+            {mode === "signup" ? <Text style={styles.policyHint}>{PASSWORD_POLICY}</Text> : null}
+            {mode === "signin" ? (
+              <Pressable
+                testID="auth-forgot"
+                onPress={() => {
+                  setMode("forgot");
+                  clearMessages();
+                }}
+                style={styles.switch}
+              >
+                <Text style={styles.switchText}>Esqueci minha senha</Text>
+              </Pressable>
+            ) : null}
+            {role === "candidate" && mode === "signin" ? (
+              <>
+                <Text style={styles.or}>ou continue com</Text>
+                <Pressable
+                  testID="google-login"
+                  onPress={google}
+                  style={({ pressed }) => [styles.socialButton, pressed && styles.pressed]}
+                >
+                  <Ionicons name="logo-google" size={19} color={colors.ink} />
+                  <Text style={styles.socialText}>Continuar com Google</Text>
+                </Pressable>
+              </>
+            ) : null}
+            {role === "recruiter" && mode === "signin" ? (
+              <Text style={styles.providerNote}>
+                Login social liberado após validação da identidade corporativa.
+              </Text>
+            ) : null}
+            <Pressable
+              testID="auth-switch"
+              onPress={() => {
+                setMode(mode === "signup" ? "signin" : "signup");
+                clearMessages();
+                setConfirmPassword("");
+              }}
+              style={styles.switch}
+            >
+              <Text style={styles.switchText}>
+                {mode === "signup" ? "Já tenho uma conta" : "Ainda não tenho conta"}
+              </Text>
+            </Pressable>
+          </>
         )}
-        <Pressable
-          testID="auth-switch"
-          onPress={() => {
-            setCreate(!create);
-            setError("");
-          }}
-          style={styles.switch}
-        >
-          <Text style={styles.switchText}>{create ? "Já tenho uma conta" : "Ainda não tenho conta"}</Text>
-        </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
   );
+}
+
+function titleFor(mode: AuthMode): string {
+  if (mode === "signup") return "Crie sua conta";
+  if (mode === "forgot") return "Recuperar senha";
+  if (mode === "reset") return "Definir nova senha";
+  return "Bem-vindo de volta";
+}
+function subtitleFor(mode: AuthMode, role: Role): string {
+  if (mode === "forgot") return "Enviaremos um link seguro por e-mail em instantes.";
+  if (mode === "reset") return "Use o código recebido por e-mail para escolher uma nova senha.";
+  return role === "candidate"
+    ? "Seu próximo passo profissional começa aqui."
+    : "Encontre pessoas que combinam com sua vaga.";
 }
 
 const styles = StyleSheet.create({
@@ -251,8 +451,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 18,
   },
-  authTitle: { fontSize: 28, lineHeight: 34, fontWeight: "500", color: colors.ink },
-  authSub: { color: colors.muted, fontSize: 15, textAlign: "center", marginTop: 8 },
+  authTitle: { fontSize: 28, lineHeight: 34, fontWeight: "500", color: colors.ink, textAlign: "center" },
+  authSub: { color: colors.muted, fontSize: 15, textAlign: "center", marginTop: 8, paddingHorizontal: 8 },
   policyHint: { color: colors.muted, fontSize: 12, marginTop: 12 },
   or: { color: colors.muted, textAlign: "center", marginTop: 22, fontSize: 12 },
   socialButton: {
@@ -271,4 +471,13 @@ const styles = StyleSheet.create({
   providerNote: { marginTop: 18, color: colors.muted, fontSize: 12, textAlign: "center" },
   switch: { minHeight: 48, alignItems: "center", justifyContent: "center", marginTop: 8 },
   switchText: { color: colors.blue, fontSize: 15, fontWeight: "500" },
+  info: {
+    flexDirection: "row",
+    gap: 10,
+    padding: 14,
+    borderRadius: 13,
+    backgroundColor: colors.pale,
+    marginTop: 14,
+  },
+  infoText: { color: colors.blue, fontSize: 14, lineHeight: 20, flex: 1 },
 });
